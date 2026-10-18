@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Maa-Jagdamba | Online Store</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f5f7f5;
+      color: #222;
+    }
+
+    header {
+      background: #087f45;
+      color: white;
+      padding: 22px 18px;
+    }
+
+    header h1 {
+      margin: 0 0 8px;
+      font-size: 28px;
+    }
+
+    header p {
+      margin: 0;
+      font-size: 15px;
+    }
+
+    main {
+      max-width: 900px;
+      margin: auto;
+      padding: 18px;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      font-size: 16px;
+      margin: 8px 0 20px;
+    }
+
+    .products {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(145px, 1fr));
+      gap: 14px;
+    }
+
+    .product {
+      background: white;
+      border-radius: 12px;
+      padding: 15px;
+      box-shadow: 0 2px 8px #0000000c;
+    }
+
+    .emoji {
+      font-size: 42px;
+    }
+
+    .product h3 {
+      font-size: 16px;
+      min-height: 36px;
+    }
+
+    .price {
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    button {
+      background: #087f45;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 11px;
+      font-size: 15px;
+      cursor: pointer;
+    }
+
+    .product button {
+      width: 100%;
+    }
+
+    .cart {
+      background: white;
+      padding: 18px;
+      margin-top: 24px;
+      border-radius: 12px;
+    }
+
+    .cart-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 0;
+      border-bottom: 1px solid #eee;
+    }
+
+    .cart-row button {
+      padding: 6px 10px;
+    }
+
+    .muted {
+      color: #666;
+      font-size: 13px;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>🛒 Maa-Jagdamba</h1>
+    <p>Your neighbourhood store, just a tap away!</p>
+  </header>
+
+  <main>
+    <h2>Shop Products</h2>
+
+    <input
+      id="search"
+      type="search"
+      placeholder="Search for milk, rice, fruits..."
+    >
+
+    <div class="products" id="products"></div>
+
+    <section class="cart">
+      <h2>🛍️ Your Cart (<span id="count">0</span>)</h2>
+      <div id="cartItems">Your cart is empty.</div>
+      <h3 id="total">Total: ₹0</h3>
+      <p class="muted">
+        Demo version: checkout and real orders are not enabled yet.
+      </p>
+    </section>
+  </main>
+
+  <script>
+    const inventory = [
+      { id: 1, name: "Milk 500 ml", price: 30, emoji: "🥛" },
+      { id: 2, name: "Bread", price: 40, emoji: "🍞" },
+      { id: 3, name: "Rice 1 kg", price: 70, emoji: "🍚" },
+      { id: 4, name: "Apples 1 kg", price: 160, emoji: "🍎" },
+      { id: 5, name: "Bananas", price: 50, emoji: "🍌" },
+      { id: 6, name: "Eggs 6 pcs", price: 45, emoji: "🥚" },
+      { id: 7, name: "Potatoes 1 kg", price: 35, emoji: "🥔" },
+      { id: 8, name: "Cooking Oil 1 L", price: 150, emoji: "🫗" }
+    ];
+
+    const cart = {};
+
+    function renderProducts() {
+      const search = document
+        .getElementById("search")
+        .value.toLowerCase();
+
+      const filtered = inventory.filter(product =>
+        product.name.toLowerCase().includes(search)
+      );
+
+      document.getElementById("products").innerHTML =
+        filtered.map(product => `
+          <div class="product">
+            <div class="emoji">${product.emoji}</div>
+            <h3>${product.name}</h3>
+            <p class="price">₹${product.price}</p>
+            <button onclick="addToCart(${product.id})">
+              Add to Cart
+            </button>
+          </div>
+        `).join("") || "<p>No products found.</p>";
+    }
+
+    function addToCart(id) {
+      cart[id] = (cart[id] || 0) + 1;
+      renderCart();
+    }
+
+    function changeQuantity(id, change) {
+      cart[id] += change;
+
+      if (cart[id] <= 0) {
+        delete cart[id];
+      }
+
+      renderCart();
+    }
+
+    function renderCart() {
+      const items = inventory.filter(product => cart[product.id]);
+
+      document.getElementById("cartItems").innerHTML =
+        items.length
+          ? items.map(product => `
+              <div class="cart-row">
+                <div>
+                  ${product.emoji} ${product.name}<br>
+                  ₹${product.price * cart[product.id]}
+                  <span class="muted">
+                    (${cart[product.id]} × ₹${product.price})
+                  </span>
+                </div>
+                <div>
+                  <button onclick="changeQuantity(${product.id}, -1)">−</button>
+                  <button onclick="changeQuantity(${product.id}, 1)">+</button>
+                </div>
+              </div>
+            `).join("")
+          : "Your cart is empty.";
+
+      const total = items.reduce(
+        (sum, product) => sum + product.price * cart[product.id],
+        0
+      );
+
+      const count = items.reduce(
+        (sum, product) => sum + cart[product.id],
+        0
+      );
+
+      document.getElementById("total").textContent = `Total: ₹${total}`;
+      document.getElementById("count").textContent = count;
+    }
+
+    document.getElementById("search").addEventListener(
+      "input",
+      renderProducts
+    );
+
+    renderProducts();
+    renderCart();
+  </script>
+</body>
+</html>
